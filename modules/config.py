@@ -1,3 +1,18 @@
+"""
+### WATERMARK ###
+
+# Dev: Pavel Krupenko #
+# Git: greench2020 #
+# VK: @greench_2021 #
+# Telegram: @Andeeeyyy #
+# Discord: '3EJLEHblN 4EJLOBEK#3374'
+
+### WATERMARK ###
+
+
+Скрипт, хранящий в себе необходимые данные для  нормальной работы бота.
+"""
+
 # Passwords/IDs
 vk_acces_token = 'Vk group token'
 feedback_chat = 'Chat_id, where bot will send feedback. Example: 2000000002'

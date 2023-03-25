@@ -1,6 +1,22 @@
 import sqlite3
 
 
+"""
+### WATERMARK ###
+
+# Dev: Pavel Krupenko #
+# Git: greench2020 #
+# VK: @greench_2021 #
+# Telegram: @Andeeeyyy #
+# Discord: '3EJLEHblN 4EJLOBEK#3374'
+
+### WATERMARK ###
+
+
+Скрипт для управления Базой данных SQLite3. Описание функций не требуется, функционал понятен по названию
+"""
+
+
 class BotDB:
 
     def __init__(self, db_file):

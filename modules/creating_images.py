@@ -1,14 +1,29 @@
+"""
+### WATERMARK ###
+
+# Dev: Pavel Krupenko #
+# Git: greench2020 #
+# VK: @greench_2021 #
+# Telegram: @Andeeeyyy #
+# Discord: '3EJLEHblN 4EJLOBEK#3374'
+
+### WATERMARK ###
+
+
+Скрипт для создания изображений, используемых ботов при работе.
+"""
+
 import datetime
 import locale
-import pymorphy2
-
-from PIL import Image, ImageDraw, ImageFont
 import os
+
+import pymorphy2
+from PIL import Image, ImageDraw, ImageFont
+
 from modules.config import w_daya
 from modules.paths import *
 
 morph = pymorphy2.MorphAnalyzer()
-
 days = {}
 data_days = {}
 
@@ -128,6 +143,7 @@ def create_img(lessons, user_id):
 
 # Main function
 def create_report(report, user_id):
+    list_averages = []
     dict_mark = {'5': 0, '4': 0, '3': 0, '2': 0, 'average': 0, 'term': 0}
     list_pre_report = []
     mark_pos = (917, 16)
@@ -151,6 +167,17 @@ def create_report(report, user_id):
             else:
                 mark_pos = (mark_pos[0] + 62, mark_pos[1])
             draw_text.text(mark_pos, total[keys], fill='black', font=font)
+
+    for mark in report['subjects'].keys():
+        if report['subjects'][mark]['average'] != '\xa0':
+            list_averages.append(float(report['subjects'][mark]['average'].replace(',', '.')))
+
+    if list_averages:
+        average_term = round((sum(list_averages) / len(list_averages)), 2)
+    else:
+        average_term = '\xa0'
+
+    draw_text.text((mark_pos[0] + 10, mark_pos[1]), str(average_term), fill='black', font=font)
 
     w_1, h_1 = im.size
     w_2, h_2 = im2.size
@@ -231,6 +258,7 @@ def generating_body_report(im, user_id, list_reports):
     # Return path to image
     return new_im
 
+# DEVELOPING #
 
 # def edit_total(example_marks):
 #     if len(example_marks) == 6:
@@ -264,4 +292,4 @@ def generating_body_report(im, user_id, list_reports):
 # generation_total_report(10, base_total)
 
 
-print('[*] Creating images upload!')
+print('[*] Creating images was successfully upload!')

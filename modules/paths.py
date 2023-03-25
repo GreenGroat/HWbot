@@ -1,3 +1,18 @@
+"""
+### WATERMARK ###
+
+# Dev: Pavel Krupenko #
+# Git: greench2020 #
+# VK: @greench_2021 #
+# Telegram: @Andeeeyyy #
+# Discord: '3EJLEHblN 4EJLOBEK#3374'
+
+### WATERMARK ###
+
+
+Скрипт, хранящий в себе пути до необходимых для нормальной работы бота файлов.
+"""
+
 # Debug Paths
 path_to_informations_txt = ''
 path_to_online_json = ''

@@ -1,17 +1,32 @@
 # -*- coding: utf-8 -*-
+"""
+### WATERMARK ###
+
+# Dev: Pavel Krupenko #
+# Git: greench2020 #
+# VK: @greench_2021 #
+# Telegram: @Andeeeyyy #
+# Discord: '3EJLEHblN 4EJLOBEK#3374'
+
+### WATERMARK ###
+
+
+Main скрипт бота. Используется vkbottle.
+"""
+
 import datetime
 import itertools
+import json
 import os
 import sys
 import time
-import json
-import loguru
 import traceback
 import zipfile
-import requests
 from asyncio import sleep
 from datetime import timedelta
 
+import loguru
+import requests
 from vkbottle import Callback, GroupEventType, GroupTypes
 from vkbottle import Keyboard, KeyboardButtonColor, Text, CtxStorage, BaseStateGroup
 from vkbottle import PhotoMessageUploader, DocMessagesUploader
@@ -19,12 +34,11 @@ from vkbottle.bot import Bot, Message, MessageEvent
 from vkbottle_types.objects import WallPostType
 
 from modules.botdb import BotDB
-from modules.requests_test import post_to_site
 from modules.config import *
-from modules.paths import *
 from modules.creating_images import create_img, create_report
+from modules.parse_site import post_to_site
+from modules.paths import *
 from netschoolapi import NetSchoolAPI
-
 
 # Debug
 loguru.logger.add(full_path_to_errors_txt, level="ERROR")
@@ -266,9 +280,11 @@ async def homework_day(message: Message):
     # Sending list of lessons to func, creating image
     if res != '💤 Нет уроков, отдыхай = )':
         if await islogged(message.from_id):
-            keyboard = (Keyboard(one_time=False,
-                                 inline=False)).add(Callback('ℹ Подробности', {'homework': 'details', 'day': real_day.strftime('%d-%m-%y')}),
-                                                    color=KeyboardButtonColor.PRIMARY).row().add(Text('Назад в меню', {'logged': 'menu'}), color=KeyboardButtonColor.SECONDARY)
+            keyboard = (Keyboard(one_time=False, inline=False))\
+                .add(Callback('ℹ Подробности', {'homework': 'details', 'day': real_day.strftime('%d-%m-%y')}),
+                     color=KeyboardButtonColor.PRIMARY)\
+                .row()\
+                .add(Text('Назад в меню', {'logged': 'menu'}), color=KeyboardButtonColor.SECONDARY)
         else:
             keyboard = (Keyboard(one_time=False,
                                  inline=False)).add(Text('🏡 Назад в меню', {'logged': 'menu'}),
@@ -900,9 +916,8 @@ async def rings_day(message: Message):
             title='image.jpg', file_source=os.getcwd() + path_to_other_days_jpg, peer_id=message.peer_id
         )
         now_day = ''
-    await message.answer(message=f'🔔 Расписание звонков {now_day}',
-                         keyboard=Keyboard(one_time=True, inline=False)
-                         .add(Text('🏡 Назад в меню', {'logged': 'menu'}), color=KeyboardButtonColor.SECONDARY) ,attachment=doc)
+    await message.answer(message=f'🔔 Расписание звонков {now_day}', attachment=doc)
+    await logged_menu(message)
     await writing_to_file('rings_another_day')
 
 
@@ -945,11 +960,10 @@ async def schedule_week(message: Message):
             for num in range(len(data[i]) - 1):
                 res += str(num + 1) + ') ' + data[i][num]
 
-        await message.answer(res, keyboard=Keyboard(one_time=True, inline=False)
-                             .add(Text('🏡 Назад в меню', {'logged': 'menu'}), color=KeyboardButtonColor.PRIMARY))
+        await message.answer(res)
     else:
-        await message.answer('💤 Нет уроков, отдыхай = )', keyboard=Keyboard(one_time=True, inline=False)
-                             .add(Text('🏡 Назад в меню', {'logged': 'menu'}), color=KeyboardButtonColor.PRIMARY))
+        await message.answer('💤 Нет уроков, отдыхай = )')
+    await logged_menu(message)
     await writing_to_file('schedule_week')
 
 
@@ -1147,8 +1161,8 @@ async def total_marks(message: Message):
     result += '\n🗓Годовые:\n'
     for subject in report['year']:
         result += f"	{subject}: {report['year'][subject]}\n"
-    await message.answer(result, keyboard=Keyboard(one_time=True, inline=False)
-                         .add(Text('🏡 Назад в меню', {'logged': 'menu'}), color=KeyboardButtonColor.NEGATIVE))
+    await message.answer(result)
+    await logged_menu(message)
     await writing_to_file('total_report')
 
 
@@ -1420,8 +1434,8 @@ async def global_report_admin(message: Message):
             for day in online_data.keys():
                 msg += f'{day}: {len(online_data[day])} чел.\n'
 
-    await message.answer(msg, keyboard=Keyboard(one_time=False, inline=False).add(Text('🏡 Назад в меню', {'logged': 'menu'}),
-                                                    color=KeyboardButtonColor.SECONDARY))
+    await message.answer(msg)
+    await logged_menu(message)
 
 
 @bot.on.raw_event(GroupEventType.WALL_POST_NEW, dataclass=GroupTypes.WallPostNew)
@@ -1440,6 +1454,46 @@ async def aboba(event: GroupTypes.WallPostNew):
             msg = 'Возникла ошибка при получении поста с группы:\n\n' + traceback.format_exc()
             await bot.api.messages.send(user_id=developer_id, random_id=0, message=msg)
             await bot.api.messages.send(user_id=site_manager_id, random_id=0, message='Произошла ошибка, разработчик уже оповещен')
+
+
+@bot.on.private_message(text='.отзыв <text>')
+async def review(message: Message, text):
+    if message.from_id == developer_id:
+        sender = 0
+        keyboard = Keyboard(one_time=True, inline=False)
+        for num in range(10):
+            if num % 3 != 0:
+                keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY)
+            else:
+                if num != 9:
+                    keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY).row()
+                else:
+                    keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY)
+        everyone = await db.get_all()
+        alist = []
+        for user in everyone:
+            if user[-1] == 'Yes':
+                alist.append(int(user[1]))
+
+        for human in alist:
+            try:
+                await bot.api.messages.send(user_id=human, message=text, keyboard=keyboard, random_id=0)
+                sender += 1
+            except Exception as e:
+                pass
+            finally:
+                await sleep(2)
+        await message.answer(f'Готово!\nОтправлено {sender} сообщений')
+
+
+@bot.on.private_message(payload={'review': 'mark'})
+async def payload_review(message: Message):
+    try:
+        await message.answer('Спасибо за ответ!')
+        await bot.api.messages.send(peer_id=feedback_chat, message=f'Новый отзыв о боте!\nОценка: {message.text}\nПользователь: @{message.from_id}', random_id=0)
+        await logged_menu(message)
+    except:
+        pass
 
 
 @bot.on.raw_event(GroupEventType.MESSAGE_EVENT, dataclass=MessageEvent)
@@ -1500,9 +1554,10 @@ async def choose_cat(message: Message):
     attachments = msg.attachments
     if attachments:
         for attach in attachments:
-            for photo in attach.photo.sizes:
-                if photo.width == 320:
-                    pictures_dict.append(photo.url)
+            if attach.photo:
+                for photo in attach.photo.sizes:
+                    if photo.width == 320:
+                        pictures_dict.append(photo.url)
 
     short_text = msg.text
     try:
@@ -1513,6 +1568,17 @@ async def choose_cat(message: Message):
         await bot.api.messages.send(user_id=developer_id, random_id=0, message=msg)
         await bot.api.messages.send(user_id=site_manager_id, random_id=0,
                                     message='Произошла ошибка, разработчик уже оповещен')
+
+
+@bot.on.private_message(text=['кот', 'Кот', 'коты', "котик"])
+async def cats(message: Message):
+    if len(message.text.split()) == 1:
+        cat_url = 'https://aws.random.cat/meow'
+        cat_link = requests.get(cat_url).json()['file']
+        pic_cat = requests.get(cat_link).content
+        pic = await PhotoMessageUploader(bot.api).upload(file_source=pic_cat, title='cat.jpg', peer_id=message.from_id)
+        await message.answer('Лови котенка!', attachment=pic)
+        await logged_menu(message)
 
 
 @bot.on.chat_message()
