@@ -35,7 +35,7 @@ from vkbottle_types.objects import WallPostType
 
 from modules.botdb import BotDB
 from modules.config import *
-from modules.creating_images import create_img, create_report
+from modules.creating_images import create_img, create_report, generation_total_report
 from modules.parse_site import post_to_site
 from modules.paths import *
 from netschoolapi import NetSchoolAPI
@@ -1120,7 +1120,8 @@ async def question_group(message: Message):
 
 @bot.on.private_message(payload={'report': 'total'})
 async def total_marks(message: Message):
-    student_class = 0
+    report = base_total
+    student_class = '55555'
     user = (await db.get(message.from_id))[0]
     sgo_login, sgo_password, output_type, site, school = user[2], user[3], user[4], user[7], user[8]
     if await islogged(message.from_id):
@@ -1131,7 +1132,7 @@ async def total_marks(message: Message):
 
         try:
             report = await ns.reportTotal()
-            student_class = (await ns.get_period())['filterSources'][1]['items'][0]['title']
+            student_class = int((await ns.get_period())['filterSources'][1]['items'][0]['title'][:-1])
             await ns.logout()
 
         except:
@@ -1140,28 +1141,34 @@ async def total_marks(message: Message):
         else:
             report = report
         await message.answer('Получение отметок...')
-    else:
-        report = base_total
+        
     await message.answer('Генерация итоговых отметок...')
-    result = '❇️Итоги четвертей:'
-    result += '\n1️⃣:\n'
-    for subject in report['1']:
-        result += f"	{subject}: {report['1'][subject]}\n"
-    result += '\n2️⃣:\n'
-    for subject in report['2']:
-        result += f"	{subject}: {report['2'][subject]}\n"
 
-    if int(student_class[:-1]) not in [10, 11]:
-        result += '\n3️⃣:\n'
-        for subject in report['3']:
-            result += f"	{subject}: {report['3'][subject]}\n"
-        result += '\n4️⃣:\n'
-        for subject in report['4']:
-            result += f"	{subject}: {report['4'][subject]}\n"
-    result += '\n🗓Годовые:\n'
-    for subject in report['year']:
-        result += f"	{subject}: {report['year'][subject]}\n"
-    await message.answer(result)
+    if output_type == 'Изображение':
+        photo = generation_total_report(message.from_id, report, student_class)
+        pic = await PhotoMessageUploader(bot.api).upload(file_source=photo, title='total.jpg', peer_id=message.from_id)
+        await message.answer('Ваши итоговые отметки:', attachment=pic)
+        os.remove(photo)
+    else:
+        result = '❇️Итоги четвертей:'
+        result += '\n1️⃣:\n'
+        for subject in report['1']:
+            result += f"	{subject}: {report['1'][subject]}\n"
+        result += '\n2️⃣:\n'
+        for subject in report['2']:
+            result += f"	{subject}: {report['2'][subject]}\n"
+        if int(student_class[:-1]) not in [10, 11]:
+            result += '\n3️⃣:\n'
+            for subject in report['3']:
+                result += f"	{subject}: {report['3'][subject]}\n"
+            result += '\n4️⃣:\n'
+            for subject in report['4']:
+                result += f"	{subject}: {report['4'][subject]}\n"
+        result += '\n🗓Годовые:\n'
+        for subject in report['year']:
+            result += f"	{subject}: {report['year'][subject]}\n"
+        await message.answer(result)
+
     await logged_menu(message)
     await writing_to_file('total_report')
 
@@ -1272,7 +1279,8 @@ async def all_users(message: Message):
 @bot.on.message(text='.изменить <user> <param> <value>')
 async def changing_params(message: Message, user, param, value):
     if message.from_id == developer_id:
-        await message.answer(message=db.change_user(user, param, value))
+
+        await message.answer(message=(await db.change_user(user, param, value)))
 
 
 @bot.on.message(text='.хелп')

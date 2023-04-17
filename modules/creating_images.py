@@ -20,7 +20,7 @@ import os
 import pymorphy2
 from PIL import Image, ImageDraw, ImageFont
 
-from modules.config import w_daya
+from modules.config import w_daya, base_total
 from modules.paths import *
 
 morph = pymorphy2.MorphAnalyzer()
@@ -260,36 +260,63 @@ def generating_body_report(im, user_id, list_reports):
 
 # DEVELOPING #
 
-# def edit_total(example_marks):
-#     if len(example_marks) == 6:
-#         if len(example_marks[0]) > 30:
-#             example_picture = Image.open(path_to_7_body_7_png)
-#             draw = ImageDraw.Draw(example_picture)
-#         else:
-#             example_picture = Image.open(path_to_7_body_toll_png)
-#             draw = ImageDraw.Draw(example_picture)
-#             font = ImageFont.truetype("BotData/Tons/arial.ttf", 11)
-#             draw.text((10, 5), example_marks[0], fill='black', font=font)
-#             first_pos = (0, 10)
-#             for mark in example_marks[1:]:
-#                 draw.text((first_pos[0] + 20, first_pos[1]), mark, fill='black', font=font)
-#             example_picture.show()
-#
-#
-# def generation_total_report(user_id, total_report):
-#     if len(total_report.keys()) == 5:
-#         head = Image.open(path_to_7_head_7_png)
-#         list_marks = []
-#         for subject in total_report['1'].keys():
-#             list_marks = [subject]
-#             for num_quaters in total_report.keys():
-#                 list_marks.append(total_report[num_quaters][subject])
-#
-#         image = edit_total(list_marks)
-#
-#
-#
-# generation_total_report(10, base_total)
+
+def creating_total_report_img(user_id, example_marks, s_class):
+    if s_class not in [10, 11]:
+        opening_pic = path_to_7_body_toll_png
+        head = Image.open(path_to_7_head_7_png)
+        m_pos = (280, 8)
+        adding_p = 83
+    else:
+        head = Image.open(path_to_11_head_png)
+        opening_pic = path_to_11_body_png
+        m_pos = (425, 8)
+        adding_p = 70
+
+    for subject, marks in example_marks.items():
+
+        pic = Image.open(opening_pic)
+        draw_text = ImageDraw.Draw(pic)
+
+        if len(subject) > 28:
+            point = subject[:29].rfind(' ')
+            subject = subject[:29][:point] + '\n' + subject[point + 1:]
+            pos = (35, 2)
+            font = ImageFont.truetype(path_to_arial_bd_ttf, 11)
+
+        else:
+            font = ImageFont.truetype(path_to_arial_bd_ttf, 13)
+            pos = (35, 8)
+
+        draw_text.text(pos, subject, fill='black', font=font)
+
+        if marks:
+            mark_pos = m_pos
+            font = ImageFont.truetype(path_to_arial_bd_ttf, 14)
+            for mark in marks:
+                draw_text.text(mark_pos, mark, fill='black', font=font)
+                mark_pos = (mark_pos[0] + adding_p, mark_pos[1])
+        w_1, h_1 = head.size
+        w_2, h_2 = pic.size
+        new_im = Image.new('RGB', (w_1, h_1 + h_2), 'white')
+        new_im.paste(head, (0, 0))
+        new_im.paste(pic, (0, h_1))
+        head = new_im
+    head.save(f'{os.getcwd()}/mlok/total_{user_id}.png')
+    return f'{os.getcwd()}/mlok/total_{user_id}.png'
+
+
+def generation_total_report(user_id, total_report, s_class):
+    total_data = {}
+    for quarter in total_report.keys():
+        for subject in total_report[quarter]:
+            if subject in total_data:
+                total_data[subject] += [total_report[quarter][subject]]
+            else:
+                total_data[subject] = [total_report[quarter][subject]]
+
+    return creating_total_report_img(user_id, total_data, s_class)
+
 
 
 print('[*] Creating images was successfully upload!')
