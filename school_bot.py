@@ -3,9 +3,9 @@
 ### WATERMARK ###
 
 # Dev: Pavel Krupenko #
-# Git: greench2020 #
-# VK: @greench_2021 #
-# Telegram: @Andeeeyyy #
+# Git: greengroat #
+# VK: @greengroat
+# Telegram: @greengroat #
 # Discord: '3EJLEHblN 4EJLOBEK#3374'
 
 ### WATERMARK ###
@@ -1141,7 +1141,7 @@ async def total_marks(message: Message):
         else:
             report = report
         await message.answer('Получение отметок...')
-        
+
     await message.answer('Генерация итоговых отметок...')
 
     if output_type == 'Изображение':

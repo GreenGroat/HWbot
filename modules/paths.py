@@ -2,9 +2,9 @@
 ### WATERMARK ###
 
 # Dev: Pavel Krupenko #
-# Git: greench2020 #
-# VK: @greench_2021 #
-# Telegram: @Andeeeyyy #
+# Git: greengroat #
+# VK: @greengroat
+# Telegram: @greengroat #
 # Discord: '3EJLEHblN 4EJLOBEK#3374'
 
 ### WATERMARK ###
