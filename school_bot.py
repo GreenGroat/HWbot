@@ -1413,7 +1413,7 @@ async def global_report_admin(message: Message):
     if message.text == 'Топ используемых функций':
         msg = 'Список используемых функций:\n\n'
         num_functions = {}
-        with open(path_to_logs_functions_txt, 'r', encoding='utf-8') as filer:
+        with open(os.getcwd() + os.sep + path_to_logs_functions_txt, 'r', encoding='utf-8') as filer:
             file = filer.readlines()
             for function in file[0].split(' ')[:-1]:
                 num_functions[function] = num_functions.get(function, 0) + 1
