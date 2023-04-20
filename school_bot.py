@@ -42,7 +42,6 @@ from netschoolapi import NetSchoolAPI
 
 # Debug
 loguru.logger.add(full_path_to_errors_txt, level="ERROR")
-loguru.logger.add(path_to_informations_txt, level="INFO", encoding='cp866')
 
 # Creating DataBase
 db = BotDB(os.getcwd() + path_to_school_db_db)
@@ -1468,15 +1467,15 @@ async def aboba(event: GroupTypes.WallPostNew):
 async def review(message: Message, text):
     if message.from_id == developer_id:
         sender = 0
-        keyboard = Keyboard(one_time=True, inline=False)
-        for num in range(10):
-            if num % 3 != 0:
-                keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY)
-            else:
-                if num != 9:
-                    keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY).row()
-                else:
-                    keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY)
+        # keyboard = Keyboard(one_time=True, inline=False)
+        # for num in range(10):
+        #     if num % 3 != 0:
+        #         keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY)
+        #     else:
+        #         if num != 9:
+        #             keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY).row()
+        #         else:
+        #             keyboard.add(Text(str(num + 1), {'review': 'mark'}), color=KeyboardButtonColor.PRIMARY)
         everyone = await db.get_all()
         alist = []
         for user in everyone:
@@ -1485,7 +1484,7 @@ async def review(message: Message, text):
 
         for human in alist:
             try:
-                await bot.api.messages.send(user_id=human, message=text, keyboard=keyboard, random_id=0)
+                await bot.api.messages.send(user_id=human, message=text, random_id=0)
                 sender += 1
             except Exception as e:
                 pass
